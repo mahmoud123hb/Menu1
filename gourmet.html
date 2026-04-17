@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gourmet - Premium Dining Experience</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9922A;
+    --gold-light: #E8B84B;
+    --gold-pale: #F5E6C8;
+    --cream: #FAF8F3;
+    --dark: #1A1A18;
+    --text-muted: #7A7568;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--cream);
+    color: var(--dark);
+    overflow-x: hidden;
+  }
+
+  /* ═══════════════════════════════
+     SPLASH SCREEN
+  ═══════════════════════════════ */
+  #splash {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: var(--dark);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    animation: splashFadeOut .6s ease 3.4s forwards;
+  }
+
+  #splash.hidden { display: none; }
+
+  .splash-logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    animation: splashIn .8s cubic-bezier(.16,1,.3,1) .3s both;
+  }
+
+  .splash-logo svg { width: 52px; height: 52px; }
+
+  .splash-tagline {
+    font-size: .95rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    animation: splashIn .6s ease .7s both;
+  }
+
+  .splash-bar {
+    width: 120px; height: 2px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    animation: splashIn .4s ease .9s both;
+  }
+
+  .splash-bar-fill {
+    height: 100%; width: 0;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 2px;
+    animation: barFill 2.2s ease 1s forwards;
+  }
+
+  @keyframes splashIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes barFill { from { width:0; } to { width:100%; } }
+  @keyframes splashFadeOut { from { opacity:1; } to { opacity:0; pointer-events:none; } }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ═══════════════════════════════
+     PAGES
+  ═══════════════════════════════ */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ═══════════════════════════════
+     NAVBAR
+  ═══════════════════════════════ */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 48px;
+    background: rgba(250,248,243,0.88);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(201,146,42,0.15);
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem; color: var(--gold); font-weight: 700;
+    text-decoration: none; cursor: pointer; background: none; border: none;
+  }
+
+  .logo svg { width: 28px; height: 28px; }
+
+  .search-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: #fff;
+    border: 1px solid rgba(201,146,42,0.25);
+    border-radius: 50px; padding: 10px 22px; width: 420px;
+    transition: border-color .2s, box-shadow .2s;
+  }
+
+  .search-bar:focus-within {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,146,42,0.12);
+  }
+
+  .search-bar input {
+    border: none; outline: none;
+    font-family: 'Outfit', sans-serif; font-size: .93rem;
+    color: var(--dark); background: transparent; width: 100%;
+  }
+
+  .search-bar svg { color: var(--text-muted); flex-shrink: 0; }
+
+  .cart-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 1.5px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background .2s; background: transparent;
+    position: relative;
+  }
+
+  .cart-btn:hover { background: var(--gold); }
+  .cart-btn:hover svg { color: #fff; }
+  .cart-btn svg { color: var(--gold); transition: color .2s; }
+
+  .cart-badge {
+    position: absolute; top: -5px; right: -5px;
+    background: var(--gold); color: #fff;
+    font-size: .62rem; font-weight: 700;
+    width: 18px; height: 18px; border-radius: 50%;
+    display: none; align-items: center; justify-content: center;
+  }
+
+  .cart-badge.show { display: flex; }
+
+  /* ═══════════════════════════════
+     HOME — HERO
+  ═══════════════════════════════ */
+  .hero {
+    min-height: 72vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    padding: 80px 24px 40px;
+    background: radial-gradient(ellipse 70% 55% at 50% 30%, rgba(232,184,75,0.13) 0%, transparent 70%);
+    animation: fadeUp .9s ease both;
+  }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: 1.5px solid var(--gold); border-radius: 50px;
+    padding: 7px 20px; font-size: .82rem; font-weight: 500;
+    color: var(--gold); margin-bottom: 32px; letter-spacing: .04em;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 7vw, 5.5rem); font-weight: 700; line-height: 1.1;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 60%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 24px;
+  }
+
+  .hero p { font-size: 1.05rem; color: var(--text-muted); max-width: 520px; line-height: 1.7; }
+
+  /* ═══════════════════════════════
+     HOME — CATEGORIES
+  ═══════════════════════════════ */
+  .categories {
+    padding: 20px 40px 80px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+  }
+
+  .cat-card {
+    position: relative; border-radius: 20px;
+    overflow: hidden; height: 320px; cursor: pointer;
+  }
+
+  .cat-card img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: brightness(0.55);
+    transition: transform .5s ease, filter .5s;
+  }
+
+  .cat-card:hover img { transform: scale(1.06); filter: brightness(0.4); }
+
+  .cat-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%);
+    padding: 28px; display: flex; flex-direction: column; justify-content: flex-end;
+  }
+
+  .cat-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem; font-weight: 600; color: var(--gold-light); margin-bottom: 8px;
+  }
+
+  .cat-desc {
+    font-size: .84rem; color: rgba(255,255,255,0.75); line-height: 1.5; margin-bottom: 14px;
+  }
+
+  .cat-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: .85rem; font-weight: 600; color: var(--gold-light);
+    background: none; border: none; cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    opacity: 0; transform: translateY(8px);
+    transition: opacity .3s, transform .3s;
+  }
+
+  .cat-card:hover .cat-link { opacity: 1; transform: translateY(0); }
+
+  /* ═══════════════════════════════
+     HOME — FEATURES
+  ═══════════════════════════════ */
+  .features {
+    padding: 60px 40px 80px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  }
+
+  .feat-card {
+    border: 1.5px solid rgba(201,146,42,0.2); border-radius: 18px;
+    padding: 40px 32px; text-align: center; background: #fff;
+    transition: border-color .25s, box-shadow .25s, transform .25s;
+  }
+
+  .feat-card:hover {
+    border-color: var(--gold);
+    box-shadow: 0 8px 32px rgba(201,146,42,0.12); transform: translateY(-4px);
+  }
+
+  .feat-icon { font-size: 2rem; margin-bottom: 16px; }
+
+  .feat-title {
+    font-family: 'Playfair Display', serif; font-size: 1.2rem;
+    color: var(--gold); font-weight: 600; margin-bottom: 12px;
+  }
+
+  .feat-desc { font-size: .9rem; color: var(--text-muted); line-height: 1.6; }
+
+  /* ═══════════════════════════════
+     MENU PAGE
+  ═══════════════════════════════ */
+  .menu-header {
+    padding: 28px 48px 20px;
+    border-bottom: 1px solid rgba(201,146,42,0.15);
+    background: #fff;
+  }
+
+  .breadcrumb {
+    font-size: .84rem; color: var(--text-muted);
+    display: flex; align-items: center; gap: 6px; margin-bottom: 10px;
+  }
+
+  .breadcrumb button {
+    background: none; border: none; color: var(--gold);
+    cursor: pointer; font-family: 'Outfit', sans-serif;
+    font-size: .84rem; font-weight: 500; padding: 0;
+  }
+
+  .breadcrumb button:hover { text-decoration: underline; }
+
+  .menu-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .item-counter {
+    display: flex; align-items: center; gap: 8px;
+    font-size: .9rem; color: var(--text-muted);
+  }
+
+  .item-counter svg { color: var(--gold); }
+
+  .sort-wrap {
+    display: flex; align-items: center; gap: 10px;
+    font-size: .88rem; color: var(--text-muted);
+  }
+
+  .sort-wrap select {
+    border: 1.5px solid rgba(201,146,42,0.25); border-radius: 8px;
+    padding: 8px 14px; font-family: 'Outfit', sans-serif;
+    font-size: .88rem; color: var(--dark); outline: none;
+    background: #fff; cursor: pointer; transition: border-color .2s;
+  }
+
+  .sort-wrap select:focus { border-color: var(--gold); }
+
+  /* TABS */
+  .cat-tabs {
+    display: flex; gap: 8px; padding: 18px 48px;
+    overflow-x: auto; background: var(--cream);
+    border-bottom: 1px solid rgba(201,146,42,0.1);
+  }
+
+  .cat-tabs::-webkit-scrollbar { display: none; }
+
+  .tab-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 20px; border-radius: 50px;
+    border: 1.5px solid rgba(201,146,42,0.25);
+    background: #fff; font-family: 'Outfit', sans-serif;
+    font-size: .88rem; font-weight: 500; color: var(--text-muted);
+    cursor: pointer; white-space: nowrap; transition: all .2s;
+  }
+
+  .tab-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .tab-btn.active {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border-color: transparent; color: #fff;
+    box-shadow: 0 4px 14px rgba(201,146,42,0.3);
+  }
+
+  /* ITEMS GRID */
+  .items-grid {
+    padding: 32px 48px 60px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+  }
+
+  .item-card {
+    background: #fff; border-radius: 18px; overflow: hidden;
+    border: 1px solid rgba(201,146,42,0.12);
+    transition: box-shadow .25s, transform .25s;
+    animation: fadeUp .45s ease both;
+  }
+
+  .item-card:hover { box-shadow: 0 12px 36px rgba(0,0,0,0.1); transform: translateY(-4px); }
+
+  .item-img { width: 100%; height: 200px; object-fit: cover; display: block; }
+
+  .item-body { padding: 20px; }
+
+  .item-name {
+    font-family: 'Playfair Display', serif; font-size: 1.05rem;
+    font-weight: 600; color: var(--dark); margin-bottom: 8px;
+  }
+
+  .item-desc {
+    font-size: .82rem; color: var(--text-muted);
+    line-height: 1.55; margin-bottom: 16px; min-height: 40px;
+  }
+
+  .item-footer { display: flex; align-items: center; justify-content: space-between; }
+
+  .item-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem; font-weight: 700; color: var(--gold);
+  }
+
+  .add-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: #fff; border: none; border-radius: 50px;
+    padding: 9px 18px; font-family: 'Outfit', sans-serif;
+    font-size: .85rem; font-weight: 600; cursor: pointer;
+    transition: opacity .2s, transform .15s;
+  }
+
+  .add-btn:hover { opacity: .9; transform: scale(1.03); }
+  .add-btn.added { background: linear-gradient(135deg,#2a7c5e,#3bb87c); }
+
+  /* ═══════════════════════════════
+     NEWSLETTER + FOOTER
+  ═══════════════════════════════ */
+  .newsletter {
+    background: linear-gradient(135deg, rgba(201,146,42,0.12), rgba(232,184,75,0.08));
+    border-top: 1px solid rgba(201,146,42,0.2);
+    border-bottom: 1px solid rgba(201,146,42,0.2);
+    padding: 40px 48px;
+    display: flex; align-items: center; justify-content: space-between; gap: 32px;
+  }
+
+  .newsletter-text h3 {
+    font-family: 'Playfair Display', serif; font-size: 1.4rem;
+    color: var(--dark); margin-bottom: 6px;
+  }
+
+  .newsletter-text p { font-size: .87rem; color: var(--text-muted); }
+  .newsletter-form { display: flex; gap: 10px; flex-shrink: 0; }
+
+  .newsletter-form input {
+    border: 1.5px solid rgba(201,146,42,0.3); border-radius: 50px;
+    padding: 11px 22px; font-family: 'Outfit', sans-serif;
+    font-size: .9rem; outline: none; width: 260px; background: #fff;
+    transition: border-color .2s;
+  }
+
+  .newsletter-form input:focus { border-color: var(--gold); }
+
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: #fff; border: none; border-radius: 50px;
+    padding: 11px 28px; font-family: 'Outfit', sans-serif;
+    font-size: .9rem; font-weight: 600; cursor: pointer;
+    transition: opacity .2s, transform .15s; white-space: nowrap;
+  }
+
+  .btn-gold:hover { opacity: .9; transform: translateY(-1px); }
+
+  footer { background: var(--dark); color: rgba(255,255,255,0.75); padding: 64px 48px 32px; }
+
+  .footer-grid {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 48px; margin-bottom: 56px;
+  }
+
+  .footer-brand p {
+    font-size: .88rem; line-height: 1.7;
+    color: rgba(255,255,255,0.55); max-width: 280px; margin-bottom: 24px;
+  }
+
+  .socials { display: flex; gap: 12px; margin-top: 8px; }
+
+  .social-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 1px solid rgba(201,146,42,0.35);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gold-light); font-size: .85rem; font-weight: 700;
+    text-decoration: none; transition: background .2s, border-color .2s;
+  }
+
+  .social-btn:hover { background: var(--gold); border-color: var(--gold); color: #fff; }
+
+  .footer-col h4 {
+    font-family: 'Playfair Display', serif; font-size: 1rem;
+    color: var(--gold-light); margin-bottom: 18px;
+  }
+
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+  .footer-col ul li a {
+    text-decoration: none; color: rgba(255,255,255,0.55);
+    font-size: .88rem; transition: color .2s;
+  }
+
+  .footer-col ul li a:hover { color: var(--gold-light); }
+
+  .footer-contact { display: flex; flex-direction: column; gap: 12px; }
+
+  .contact-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: .87rem; color: rgba(255,255,255,0.55);
+  }
+
+  .contact-item span:first-child { color: var(--gold-light); flex-shrink: 0; }
+
+  .footer-divider { height: 1px; background: rgba(255,255,255,0.08); margin-bottom: 28px; }
+
+  .footer-bottom {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: .82rem; color: rgba(255,255,255,0.35);
+  }
+
+  .footer-bottom a { color: rgba(255,255,255,0.45); text-decoration: none; transition: color .2s; }
+  .footer-bottom a:hover { color: var(--gold-light); }
+  .footer-links { display: flex; gap: 20px; }
+
+  /* ── LIVE SYNC INDICATOR ── */
+  #syncBadge {
+    position: fixed; bottom: 20px; right: 20px; z-index: 9998;
+    background: var(--dark); color: #fff;
+    border-left: 3px solid #3AAA7A;
+    border-radius: 8px; padding: 10px 16px;
+    font-size: .8rem; font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+    transform: translateY(80px); opacity: 0;
+    transition: all .4s cubic-bezier(.16,1,.3,1);
+    pointer-events: none;
+  }
+
+  #syncBadge.show { transform: translateY(0); opacity: 1; }
+  #syncBadge .dot { width:8px;height:8px;border-radius:50%;background:#3AAA7A;animation:pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1100px) {
+    .categories, .items-grid { grid-template-columns: repeat(2,1fr); }
+    .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+  }
+
+  @media (max-width: 640px) {
+    nav { padding: 14px 20px; }
+    .search-bar { width: 180px; }
+    .categories { grid-template-columns: 1fr; padding: 16px 20px 48px; }
+    .features { grid-template-columns: 1fr; padding: 32px 20px; }
+    .items-grid { grid-template-columns: 1fr; padding: 20px; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .newsletter { flex-direction: column; padding: 32px 20px; }
+    .newsletter-form { flex-direction: column; width: 100%; }
+    .newsletter-form input { width: 100%; }
+    footer { padding: 48px 20px 24px; }
+    .menu-header, .cat-tabs { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ SPLASH ══ -->
+<div id="splash">
+  <div class="splash-logo">
+    <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 3L4 10v14h7v-8h6v8h7V10L14 3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+      <path d="M10 3v4M18 3v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <span id="splashBrandName">Gourmet</span>
+  </div>
+  <div class="splash-tagline" id="splashTagline">Premium Dining Experience</div>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+</div>
+
+<!-- ══ SYNC BADGE ══ -->
+<div id="syncBadge">
+  <div class="dot"></div>
+  <span id="syncMsg">Site updated</span>
+</div>
+
+<!-- ══ NAVBAR ══ -->
+<nav>
+  <button class="logo" onclick="showPage('home')" id="navLogo">
+    <svg viewBox="0 0 28 28" fill="none">
+      <path d="M14 3L4 10v14h7v-8h6v8h7V10L14 3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+      <path d="M10 3v4M18 3v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <span id="brandName">Gourmet</span>
+  </button>
+
+  <div class="search-bar">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="text" placeholder="Search for dishes..." id="searchInput" oninput="handleSearch()">
+  </div>
+
+  <button class="cart-btn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+    </svg>
+    <span class="cart-badge" id="cartBadge">0</span>
+  </button>
+</nav>
+
+<!-- ══════════════════════════
+     PAGE: HOME
+══════════════════════════ -->
+<div class="page active" id="page-home">
+  <section class="hero">
+    <div class="badge" id="heroBadge">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
+      <span id="heroBadgeText">Premium Dining Experience</span>
+    </div>
+    <h1 id="heroH1"><span id="heroH1a">Exquisite Flavors</span><br><span id="heroH1b">Delivered Fresh</span></h1>
+    <p id="heroTagline">Discover our carefully curated menu featuring artisanal dishes crafted with the finest ingredients</p>
+  </section>
+
+  <section class="categories" id="categoriesSection"></section>
+
+  <section class="features" id="featuresSection"></section>
+
+  <div class="newsletter">
+    <div class="newsletter-text">
+      <h3 id="newsletterTitle">Stay in the know</h3>
+      <p id="newsletterSub">Get exclusive offers, seasonal menus & chef's specials straight to your inbox.</p>
+    </div>
+    <div class="newsletter-form">
+      <input type="email" placeholder="your@email.com">
+      <button class="btn-gold">Subscribe</button>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <button class="logo" onclick="showPage('home')" style="color:var(--gold-light);margin-bottom:14px;">
+          <svg viewBox="0 0 28 28" fill="none" width="26" height="26">
+            <path d="M14 3L4 10v14h7v-8h6v8h7V10L14 3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+            <path d="M10 3v4M18 3v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="footer-brand-name">Gourmet</span>
+        </button>
+        <p>We bring the finest culinary experiences to your table. From farm to fork, every dish tells a story of passion and craftsmanship.</p>
+        <div class="socials">
+          <a class="social-btn" href="#">f</a>
+          <a class="social-btn" href="#">in</a>
+          <a class="social-btn" href="#">ig</a>
+          <a class="social-btn" href="#">X</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Our Menu</h4>
+        <ul>
+          <li><a href="#" onclick="showMenuPage('Pizza');return false;">Pizza</a></li>
+          <li><a href="#" onclick="showMenuPage('Burgers');return false;">Burgers</a></li>
+          <li><a href="#" onclick="showMenuPage('Drinks');return false;">Drinks</a></li>
+          <li><a href="#" onclick="showMenuPage('Desserts');return false;">Desserts</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Our Story</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Blog</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <div class="footer-contact" id="footerContact">
+          <div class="contact-item"><span>📍</span><span id="footerAddress">12 Culinary Ave, NY 10001</span></div>
+          <div class="contact-item"><span>📞</span><span id="footerPhone">+1 (555) 234-5678</span></div>
+          <div class="contact-item"><span>✉️</span><span id="footerEmail">hello@gourmet.com</span></div>
+          <div class="contact-item"><span>🕐</span><span id="footerHours">Mon–Sun: 10 AM – 11 PM</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-bottom">
+      <span id="footerCopyright">© 2026 Gourmet. All rights reserved.</span>
+      <div class="footer-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Cookie Policy</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════
+     PAGE: MENU
+══════════════════════════ -->
+<div class="page" id="page-menu">
+  <div class="menu-header">
+    <div class="breadcrumb">
+      <button onclick="showPage('home')">Home</button>
+      <span>›</span>
+      <span id="breadcrumbCat">Menu</span>
+    </div>
+    <div class="menu-topbar">
+      <div class="item-counter">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+          <line x1="8" y1="18" x2="21" y2="18"/>
+          <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+          <line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+        <span id="itemCount">0 items</span>
+      </div>
+      <div class="sort-wrap">
+        Sort by:
+        <select id="sortSelect" onchange="sortItems(this.value)">
+          <option value="name">Name</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-tabs" id="catTabs"></div>
+  <div class="items-grid" id="itemsGrid"></div>
+
+  <div class="newsletter">
+    <div class="newsletter-text">
+      <h3 id="newsletterTitle2">Stay in the know</h3>
+      <p id="newsletterSub2">Get exclusive offers, seasonal menus & chef's specials straight to your inbox.</p>
+    </div>
+    <div class="newsletter-form">
+      <input type="email" placeholder="your@email.com">
+      <button class="btn-gold">Subscribe</button>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <button class="logo" onclick="showPage('home')" style="color:var(--gold-light);margin-bottom:14px;">
+          <svg viewBox="0 0 28 28" fill="none" width="26" height="26">
+            <path d="M14 3L4 10v14h7v-8h6v8h7V10L14 3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+            <path d="M10 3v4M18 3v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="footer-brand-name">Gourmet</span>
+        </button>
+        <p>We bring the finest culinary experiences to your table. From farm to fork, every dish tells a story of passion and craftsmanship.</p>
+        <div class="socials">
+          <a class="social-btn" href="#">f</a>
+          <a class="social-btn" href="#">in</a>
+          <a class="social-btn" href="#">ig</a>
+          <a class="social-btn" href="#">X</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Our Menu</h4>
+        <ul>
+          <li><a href="#" onclick="showMenuPage('Pizza');return false;">Pizza</a></li>
+          <li><a href="#" onclick="showMenuPage('Burgers');return false;">Burgers</a></li>
+          <li><a href="#" onclick="showMenuPage('Drinks');return false;">Drinks</a></li>
+          <li><a href="#" onclick="showMenuPage('Desserts');return false;">Desserts</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Our Story</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Blog</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <div class="footer-contact">
+          <div class="contact-item"><span>📍</span><span id="footerAddress2">12 Culinary Ave, NY 10001</span></div>
+          <div class="contact-item"><span>📞</span><span id="footerPhone2">+1 (555) 234-5678</span></div>
+          <div class="contact-item"><span>✉️</span><span id="footerEmail2">hello@gourmet.com</span></div>
+          <div class="contact-item"><span>🕐</span><span id="footerHours2">Mon–Sun: 10 AM – 11 PM</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-bottom">
+      <span id="footerCopyright2">© 2026 Gourmet. All rights reserved.</span>
+      <div class="footer-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Cookie Policy</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+
+/* ══════════════════════════════════════════════
+   DEFAULT DATA (fallback if no admin saved yet)
+══════════════════════════════════════════════ */
+const defaultData = {
+  hero: {
+    badge:   'Premium Dining Experience',
+    h1a:     'Exquisite Flavors',
+    h1b:     'Delivered Fresh',
+    tagline: 'Discover our carefully curated menu featuring artisanal dishes crafted with the finest ingredients',
+  },
+  categories: [
+    { id:'Pizza',    title:'Pizza',    desc:'Authentic Italian pizzas with premium ingredients',   img:'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=600&q=80' },
+    { id:'Burgers',  title:'Burgers',  desc:'Gourmet burgers crafted to perfection',              img:'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80' },
+    { id:'Drinks',   title:'Drinks',   desc:'Refreshing beverages and premium cocktails',         img:'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&q=80' },
+    { id:'Desserts', title:'Desserts', desc:'Indulgent sweets to complete your meal',             img:'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=600&q=80' },
+  ],
+  features: [
+    { icon:'🌿', title:'Premium Quality', desc:'Only the finest ingredients from trusted suppliers' },
+    { icon:'🚀', title:'Fast Delivery',   desc:'Hot and fresh meals delivered to your doorstep' },
+    { icon:'👨‍🍳', title:'Expert Chefs',   desc:'Prepared by award-winning culinary professionals' },
+  ],
+  menu: {
+    Pizza: [
+      { id:1,  name:'Margherita Classic',   desc:'San Marzano tomatoes, fresh mozzarella, basil, extra virgin olive oil', price:14.99, img:'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400&q=80', active:true },
+      { id:2,  name:'Truffle Mushroom',     desc:'Black truffle, cremini mushrooms, fontina, thyme, garlic oil',          price:19.99, img:'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80', active:true },
+      { id:3,  name:'Prosciutto e Rucola',  desc:'Prosciutto di Parma, arugula, shaved parmesan, cherry tomatoes',        price:21.99, img:'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&q=80', active:true },
+      { id:4,  name:'Four Cheese',          desc:'Mozzarella, gorgonzola, fontina, parmesan, honey drizzle',              price:17.99, img:'https://images.unsplash.com/photo-1595854341625-f33ee10dbf94?w=400&q=80', active:true },
+    ],
+    Burgers: [
+      { id:5,  name:'Classic Smash',        desc:'Double smash patty, American cheese, pickles, special sauce, brioche bun', price:13.99, img:'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80', active:true },
+      { id:6,  name:'Truffle Wagyu',        desc:'Wagyu beef, truffle aioli, caramelized onions, aged cheddar',              price:24.99, img:'https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&q=80', active:true },
+      { id:7,  name:'Crispy Chicken',       desc:'Buttermilk fried chicken, coleslaw, pickled jalapeños, honey mustard',    price:15.99, img:'https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=400&q=80', active:true },
+      { id:8,  name:'BBQ Bacon Stack',      desc:'Angus beef, smoked bacon, BBQ sauce, crispy onion rings, cheddar',        price:17.99, img:'https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400&q=80', active:true },
+    ],
+    Drinks: [
+      { id:9,  name:'Fresh Orange Juice',   desc:'Freshly squeezed oranges, no added sugar, vitamin C boost',              price:6.99,  img:'https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400&q=80', active:true },
+      { id:10, name:'Iced Caramel Coffee',  desc:'Cold brew coffee, caramel syrup, milk, ice, whipped cream',              price:7.99,  img:'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400&q=80', active:true },
+      { id:11, name:'Mojito Fresco',        desc:'White rum, fresh mint, lime, sugar, soda water',                         price:12.99, img:'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&q=80', active:true },
+      { id:12, name:'Sparkling Lemonade',   desc:'Fresh lemons, sparkling water, mint, organic honey',                     price:5.99,  img:'https://images.unsplash.com/photo-1621263764928-df1444c5e859?w=400&q=80', active:true },
+      { id:13, name:'Mango Lassi',          desc:'Alphonso mango, yogurt, cardamom, rose water',                           price:7.49,  img:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80', active:true },
+      { id:14, name:'Matcha Latte',         desc:'Premium ceremonial matcha, oat milk, honey',                             price:8.99,  img:'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=400&q=80', active:true },
+      { id:15, name:'Berry Smoothie',       desc:'Blueberries, strawberries, raspberries, banana, almond milk',            price:8.49,  img:'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=400&q=80', active:true },
+      { id:16, name:'Classic Espresso',     desc:'Single origin arabica beans, crema perfetta',                            price:4.99,  img:'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?w=400&q=80', active:true },
+    ],
+    Desserts: [
+      { id:17, name:'Crème Brûlée',         desc:'Vanilla bean custard, caramelized sugar crust, fresh berries',           price:9.99,  img:'https://images.unsplash.com/photo-1470124182917-cc6e71b22ecc?w=400&q=80', active:true },
+      { id:18, name:'Tiramisu',             desc:'Ladyfingers, mascarpone, espresso, cocoa, Marsala wine',                 price:10.99, img:'https://images.unsplash.com/photo-1568051243851-f9b136146e97?w=400&q=80', active:true },
+      { id:19, name:'Lava Cake',            desc:'Dark chocolate fondant, vanilla ice cream, gold leaf',                   price:12.99, img:'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&q=80', active:true },
+      { id:20, name:'NY Cheesecake',        desc:'New York style, berry compote, graham cracker crust',                    price:9.49,  img:'https://images.unsplash.com/photo-1567327613485-fbc7bf196198?w=400&q=80', active:true },
+    ],
+  },
+  footer: { address:'12 Culinary Ave, NY 10001', phone:'+1 (555) 234-5678', email:'hello@gourmet.com', hours:'Mon–Sun: 10 AM – 11 PM' },
+  branding: { name:'Gourmet', color:'#C9922A' },
+};
+
+/* ══════════════════════════════════════════════
+   LIVE DATA — loaded from localStorage or default
+══════════════════════════════════════════════ */
+let liveData = loadData();
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem('gourmetSiteData');
+    return saved ? JSON.parse(saved) : defaultData;
+  } catch(e) { return defaultData; }
+}
+
+/* ══════════════════════════════════════════════
+   APPLY ALL DATA TO DOM
+══════════════════════════════════════════════ */
+function applyData(d) {
+  // Hero
+  setText('heroBadgeText', d.hero.badge);
+  setText('heroH1a', d.hero.h1a);
+  setText('heroH1b', d.hero.h1b);
+  setText('heroTagline', d.hero.tagline);
+  setText('splashBrandName', d.branding.name);
+  setText('splashTagline', d.branding.tagline || 'Premium Dining Experience');
+
+  // Brand name (all instances)
+  document.querySelectorAll('#brandName, .footer-brand-name').forEach(el => el.textContent = d.branding.name);
+
+  // Brand color
+  if (d.branding.color) {
+    document.documentElement.style.setProperty('--gold', d.branding.color);
+  }
+
+  // Categories
+  renderCategories(d.categories);
+
+  // Features
+  renderFeatures(d.features);
+
+  // Footer
+  setText('footerAddress', d.footer.address);
+  setText('footerPhone', d.footer.phone);
+  setText('footerEmail', d.footer.email);
+  setText('footerHours', d.footer.hours);
+  setText('footerAddress2', d.footer.address);
+  setText('footerPhone2', d.footer.phone);
+  setText('footerEmail2', d.footer.email);
+  setText('footerHours2', d.footer.hours);
+  setText('footerCopyright', d.footer.copyright || '© 2026 ' + d.branding.name + '. All rights reserved.');
+  setText('footerCopyright2', d.footer.copyright || '© 2026 ' + d.branding.name + '. All rights reserved.');
+
+  // Newsletter
+  if (d.footer.newsletterTitle) {
+    setText('newsletterTitle', d.footer.newsletterTitle);
+    setText('newsletterTitle2', d.footer.newsletterTitle);
+  }
+  if (d.footer.newsletterSub) {
+    setText('newsletterSub', d.footer.newsletterSub);
+    setText('newsletterSub2', d.footer.newsletterSub);
+  }
+
+  // Re-render menu if on menu page
+  if (currentCat) renderItems(currentCat, document.getElementById('sortSelect')?.value || 'name');
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el && val !== undefined) el.textContent = val;
+}
+
+/* ═══════════════════
+   CATEGORIES RENDER
+═══════════════════ */
+const EMOJI = { Pizza:'🍕', Burgers:'🍔', Drinks:'🥤', Desserts:'🍰' };
+
+function renderCategories(cats) {
+  const sec = document.getElementById('categoriesSection');
+  if (!sec || !cats) return;
+  sec.innerHTML = cats.map(cat => `
+    <div class="cat-card" onclick="showMenuPage('${cat.id}')">
+      <img src="${cat.img}" alt="${cat.title}">
+      <div class="cat-overlay">
+        <div class="cat-title">${cat.title}</div>
+        <div class="cat-desc">${cat.desc}</div>
+        <button class="cat-link">Explore Menu →</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderFeatures(feats) {
+  const sec = document.getElementById('featuresSection');
+  if (!sec || !feats) return;
+  sec.innerHTML = feats.map(f => `
+    <div class="feat-card">
+      <div class="feat-icon">${f.icon}</div>
+      <div class="feat-title">${f.title}</div>
+      <p class="feat-desc">${f.desc}</p>
+    </div>
+  `).join('');
+}
+
+/* ══════════════════════════════════════════════
+   REAL-TIME SYNC via storage event
+   Fires automatically when admin saves in another tab
+══════════════════════════════════════════════ */
+window.addEventListener('storage', (e) => {
+  if (e.key !== 'gourmetSiteData') return;
+  try {
+    liveData = JSON.parse(e.newValue);
+    applyData(liveData);
+    showSyncBadge('✓ Site updated live');
+  } catch(err) { console.error('Sync error:', err); }
+});
+
+function showSyncBadge(msg) {
+  const badge = document.getElementById('syncBadge');
+  const msgEl = document.getElementById('syncMsg');
+  msgEl.textContent = msg;
+  badge.classList.add('show');
+  setTimeout(() => badge.classList.remove('show'), 3000);
+}
+
+/* ══════════════════════════════════════════════
+   MENU
+══════════════════════════════════════════════ */
+const CATS = ['Pizza','Burgers','Drinks','Desserts'];
+let currentCat  = 'Drinks';
+let cartCount   = 0;
+const addedSet  = new Set();
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showMenuPage(cat) {
+  currentCat = cat;
+  renderMenu(cat);
+  showPage('menu');
+}
+
+function renderMenu(cat) {
+  document.getElementById('breadcrumbCat').textContent = cat;
+  document.getElementById('sortSelect').value = 'name';
+  document.getElementById('catTabs').innerHTML = CATS.map(c => `
+    <button class="tab-btn ${c === cat ? 'active' : ''}" onclick="switchCat('${c}')">
+      ${EMOJI[c]} ${c}
+    </button>
+  `).join('');
+  renderItems(cat, 'name');
+}
+
+function switchCat(cat) {
+  currentCat = cat;
+  document.getElementById('breadcrumbCat').textContent = cat;
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim().includes(cat));
+  });
+  renderItems(cat, document.getElementById('sortSelect').value);
+}
+
+function renderItems(cat, sort) {
+  const menuCat = liveData.menu[cat] || [];
+  let items = menuCat.filter(i => i.active !== false);
+
+  if (sort === 'price-asc')       items.sort((a,b) => a.price - b.price);
+  else if (sort === 'price-desc') items.sort((a,b) => b.price - a.price);
+  else                            items.sort((a,b) => a.name.localeCompare(b.name));
+
+  document.getElementById('itemCount').textContent = items.length + ' items';
+  document.getElementById('itemsGrid').innerHTML = items.map((item, i) => `
+    <div class="item-card" style="animation-delay:${i * 0.06}s">
+      <img class="item-img" src="${item.img}" alt="${item.name}" loading="lazy">
+      <div class="item-body">
+        <div class="item-name">${item.name}</div>
+        <div class="item-desc">${item.desc}</div>
+        <div class="item-footer">
+          <span class="item-price">$${Number(item.price).toFixed(2)}</span>
+          <button class="add-btn ${addedSet.has(item.id) ? 'added' : ''}"
+                  id="addbtn-${item.id}"
+                  onclick="addToCart(${item.id})">
+            ${addedSet.has(item.id) ? '✓ Added' : '+ Add'}
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function sortItems(val) { renderItems(currentCat, val); }
+
+function addToCart(id) {
+  if (addedSet.has(id)) return;
+  addedSet.add(id);
+  cartCount++;
+  const badge = document.getElementById('cartBadge');
+  badge.textContent = cartCount;
+  badge.classList.add('show');
+  const btn = document.getElementById('addbtn-' + id);
+  if (btn) { btn.textContent = '✓ Added'; btn.classList.add('added'); }
+}
+
+function handleSearch() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!q) return;
+  for (const [cat, items] of Object.entries(liveData.menu)) {
+    if (items.some(i => i.name.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q))) {
+      showMenuPage(cat);
+      return;
+    }
+  }
+}
+
+/* ══ SPLASH ══ */
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const s = document.getElementById('splash');
+    if (s) s.addEventListener('animationend', () => { s.style.display = 'none'; });
+  }, 3400);
+});
+
+/* ══ INIT — apply data on load ══ */
+applyData(liveData);
+</script>
+</body>
+</html>
