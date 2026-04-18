@@ -107,6 +107,15 @@
   .form-textarea { resize: vertical; min-height: 80px; }
   .form-hint { font-size: .77rem; color: var(--text-muted); margin-top: 2px; }
 
+  /* ── SITE NAME PREVIEW BADGE ── */
+  .name-preview-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(201,146,42,0.08); border: 1px solid rgba(201,146,42,0.2);
+    border-radius: 10px; padding: 10px 16px; margin-top: 8px;
+    font-size: .84rem; color: var(--text-muted);
+  }
+  .name-preview-badge strong { color: var(--gold); font-family: 'Playfair Display', serif; font-size: 1rem; }
+
   /* ── IMAGE UPLOAD ── */
   .img-upload-area { position: relative; border-radius: 12px; overflow: hidden; border: 2px dashed rgba(201,146,42,0.4); background: var(--cream); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; cursor: pointer; transition: border-color .2s, background .2s; text-align: center; padding: 20px; }
   .img-upload-area:hover { border-color: var(--gold); background: rgba(201,146,42,0.04); }
@@ -202,13 +211,7 @@
   #toast.show { transform: translateY(0); opacity: 1; }
 
   /* ══ RESPONSIVE ══ */
-
-  /* Tablet */
-  @media (max-width: 1023px) {
-    :root { --sidebar-w: 220px; }
-  }
-
-  /* Mobile */
+  @media (max-width: 1023px) { :root { --sidebar-w: 220px; } }
   @media (max-width: 767px) {
     :root { --sidebar-w: 260px; }
     aside { transform: translateX(-100%); box-shadow: none; }
@@ -236,19 +239,14 @@
     .login-logo { font-size: 1.5rem; }
     .btn-change-cred, .btn-add-item { width: 100%; justify-content: center; }
     .modal-actions { flex-direction: column-reverse; }
-    .modal-actions .btn-preview,
-    .modal-actions .btn-save { width: 100%; justify-content: center; }
+    .modal-actions .btn-preview, .modal-actions .btn-save { width: 100%; justify-content: center; }
     #toast { bottom: 16px; right: 16px; left: 16px; max-width: unset; }
   }
-
-  /* Very small screens */
   @media (max-width: 380px) {
     .stats-grid { grid-template-columns: 1fr; }
     .topbar-actions { gap: 6px; }
     .live-dot { display: none; }
   }
-
-  /* Touch-friendly targets */
   @media (hover: none) and (pointer: coarse) {
     .nav-item, .tab-pill, .btn-login, .btn-save, .btn-preview, .btn-add-item { min-height: 48px; }
     .del-btn, .btn-danger-sm { min-width: 44px; min-height: 44px; }
@@ -265,7 +263,7 @@
   <div class="login-card">
     <div class="login-logo">
       <svg viewBox="0 0 28 28" fill="none"><path d="M14 3L4 10v14h7v-8h6v8h7V10L14 3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/><path d="M10 3v4M18 3v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      Gourmet
+      <span id="loginLogoName">Gourmet</span>
     </div>
     <div class="login-sub">Admin Control Panel</div>
     <div id="loginForm">
@@ -320,7 +318,7 @@
 <aside id="sidebar">
   <div class="sidebar-logo">
     <svg viewBox="0 0 28 28" fill="none"><path d="M14 3L4 10v14h7v-8h6v8h7V10L14 3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/><path d="M10 3v4M18 3v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-    Gourmet
+    <span id="sidebarBrandName">Gourmet</span>
   </div>
   <div class="sidebar-role">Admin Control Panel</div>
   <div class="nav-group">
@@ -583,14 +581,37 @@
   <!-- BRANDING -->
   <div class="panel" id="panel-branding">
     <div class="section-title">Branding &amp; Colors</div>
-    <div class="section-sub">Customize the visual identity of Gourmet.</div>
+    <div class="section-sub">Customize the visual identity of your restaurant.</div>
+
+    <!-- ★ NEW: Site Name Card ★ -->
     <div class="card">
-      <div class="card-title">Logo &amp; Site Name</div>
-      <div class="form-grid">
-        <div class="form-group"><label class="form-label">Brand Name</label><input class="form-input" id="brand-name" value="Gourmet" oninput="markDirty()"></div>
-        <div class="form-group"><label class="form-label">Splash Tagline</label><input class="form-input" id="brand-tagline" value="Premium Dining Experience" oninput="markDirty()"></div>
+      <div class="card-title">
+        🏷️ Site Name
+        <span>Appears everywhere: browser tab, navbar, footer, splash screen, WhatsApp orders</span>
+      </div>
+      <div class="form-grid" style="max-width:560px;">
+        <div class="form-group form-full">
+          <label class="form-label">Restaurant / Site Name</label>
+          <input class="form-input" id="brand-name"
+                 value="Gourmet"
+                 placeholder="e.g. La Bella, Spice House, The Grill..."
+                 oninput="onBrandNameInput(this.value)"
+                 style="font-size:1.05rem;font-weight:600;">
+          <div class="form-hint">This name will update across the entire site instantly after Save &amp; Publish.</div>
+          <!-- Live preview -->
+          <div class="name-preview-badge" id="namePreviewBadge">
+            <svg width="16" height="16" viewBox="0 0 28 28" fill="none"><path d="M14 3L4 10v14h7v-8h6v8h7V10L14 3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/></svg>
+            Preview: <strong id="namePreviewText">Gourmet</strong>
+          </div>
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Splash Tagline</label>
+          <input class="form-input" id="brand-tagline" value="Premium Dining Experience" oninput="markDirty()">
+          <div class="form-hint">Short phrase shown under the name on the loading screen.</div>
+        </div>
       </div>
     </div>
+
     <div class="card">
       <div class="card-title">Primary Color</div>
       <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:16px;">Choose your brand accent color — used for buttons, prices, headings.</p>
@@ -672,10 +693,8 @@ function saveAdminPass(p){localStorage.setItem('gourmetAdminPass',p);}
 
 /* Sidebar mobile */
 function toggleSidebar(){
-  const s=document.getElementById('sidebar');
-  const o=document.getElementById('sidebarOverlay');
-  s.classList.toggle('open');
-  o.classList.toggle('open');
+  const s=document.getElementById('sidebar');const o=document.getElementById('sidebarOverlay');
+  s.classList.toggle('open');o.classList.toggle('open');
   document.body.style.overflow=s.classList.contains('open')?'hidden':'';
 }
 function closeSidebar(){
@@ -704,28 +723,41 @@ function doAdminLogin(){
 }
 function doLogout(){
   if(!confirm('Are you sure you want to logout?'))return;
-  document.getElementById('loginUsername').value='';
-  document.getElementById('loginPassword').value='';
+  document.getElementById('loginUsername').value='';document.getElementById('loginPassword').value='';
   document.getElementById('loginError').style.display='none';
   document.getElementById('loginForm').style.display='block';
   document.getElementById('loginSuccess').style.display='none';
   document.getElementById('loginScreen').style.display='flex';
 }
 function updateSidebarName(u){
-  const n=document.getElementById('sidebarAdminName');
-  const a=document.getElementById('sidebarAvatar');
-  if(n)n.textContent=u;
-  if(a)a.textContent=u.charAt(0).toUpperCase();
+  const n=document.getElementById('sidebarAdminName');const a=document.getElementById('sidebarAvatar');
+  if(n)n.textContent=u;if(a)a.textContent=u.charAt(0).toUpperCase();
 }
 document.addEventListener('keydown',(e)=>{
   if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none')doAdminLogin();
 });
 
+/* ★ Brand Name — live preview & instant admin-UI update ★ */
+function onBrandNameInput(name){
+  markDirty();
+  const trimmed = name.trim() || 'Gourmet';
+  // Update preview badge
+  const preview = document.getElementById('namePreviewText');
+  if(preview) preview.textContent = trimmed;
+  // Update sidebar logo name
+  const sbn = document.getElementById('sidebarBrandName');
+  if(sbn) sbn.textContent = trimmed;
+  // Update login logo name
+  const lln = document.getElementById('loginLogoName');
+  if(lln) lln.textContent = trimmed;
+  // Update page title
+  document.title = trimmed + ' — Admin Panel';
+}
+
 /* Credentials */
 function toggleFieldPw(id){const el=document.getElementById(id);if(el)el.type=el.type==='password'?'text':'password';}
 function checkPwStrength(pw){
-  const fill=document.getElementById('strengthFill');
-  const label=document.getElementById('strengthLabel');
+  const fill=document.getElementById('strengthFill');const label=document.getElementById('strengthLabel');
   if(!pw){fill.style.width='0%';label.textContent='';return;}
   let s=0;
   if(pw.length>=6)s++;if(pw.length>=10)s++;
@@ -868,9 +900,20 @@ const siteData={
     setField('newsletter-title',siteData.footer.newsletterTitle);setField('newsletter-sub',siteData.footer.newsletterSub);setField('footer-copyright',siteData.footer.copyright);
     setField('brand-name',siteData.branding.name);setField('brand-tagline',siteData.branding.tagline);setField('custom-color',siteData.branding.color);
     if(siteData.branding.color)document.documentElement.style.setProperty('--gold',siteData.branding.color);
+    // Apply saved brand name to admin UI
+    applyBrandNameToAdminUI(siteData.branding.name);
   }catch(e){}
   const storedUser=localStorage.getItem('gourmetAdminUser');if(storedUser)updateSidebarName(storedUser);
 })();
+
+/* Apply brand name throughout admin UI */
+function applyBrandNameToAdminUI(name){
+  const n = name || 'Gourmet';
+  const sbn=document.getElementById('sidebarBrandName');if(sbn)sbn.textContent=n;
+  const lln=document.getElementById('loginLogoName');if(lln)lln.textContent=n;
+  const preview=document.getElementById('namePreviewText');if(preview)preview.textContent=n;
+  document.title=n+' — Admin Panel';
+}
 
 function setField(id,val){const el=document.getElementById(id);if(el&&val!==undefined)el.value=val;}
 let currentMenuCat='',nextId=200,isDirty=false;
@@ -1050,19 +1093,36 @@ function applyCustomColor(hex){
   if(!/^#[0-9A-Fa-f]{6}$/.test(hex))return;siteData.branding.color=hex;document.documentElement.style.setProperty('--gold',hex);markDirty();
 }
 
-/* Save */
+/* Save — collects ALL form values including brand name */
 function persistAndBroadcast(){collectFormValues();localStorage.setItem('gourmetSiteData',JSON.stringify(siteData));}
+
 function collectFormValues(){
   siteData.hero.badge=val('hero-badge');siteData.hero.h1a=val('hero-h1a');siteData.hero.h1b=val('hero-h1b');siteData.hero.tagline=val('hero-tagline');
   siteData.footer.address=val('footer-address');siteData.footer.phone=val('footer-phone');siteData.footer.email=val('footer-email');siteData.footer.hours=val('footer-hours');
   siteData.footer.newsletterTitle=val('newsletter-title');siteData.footer.newsletterSub=val('newsletter-sub');siteData.footer.copyright=val('footer-copyright');
-  siteData.branding.name=val('brand-name');siteData.branding.tagline=val('brand-tagline');siteData.branding.color=val('custom-color')||siteData.branding.color;
+  // ★ Brand name — read from input and apply everywhere ★
+  const newName = val('brand-name').trim() || 'Gourmet';
+  siteData.branding.name = newName;
+  siteData.branding.tagline=val('brand-tagline');
+  siteData.branding.color=val('custom-color')||siteData.branding.color;
+  // Sync admin UI with latest name
+  applyBrandNameToAdminUI(newName);
 }
+
 function val(id){const el=document.getElementById(id);return el?el.value:'';}
-function saveAll(){persistAndBroadcast();isDirty=false;showToast('✓ Saved & published to live site!');const dot=document.querySelector('#liveDot .dot');dot.style.background='#E8B84B';setTimeout(()=>{dot.style.background='#3AAA7A';},800);}
+
+function saveAll(){
+  persistAndBroadcast();
+  isDirty=false;
+  showToast('✓ Saved & published to live site!');
+  const dot=document.querySelector('#liveDot .dot');
+  dot.style.background='#E8B84B';
+  setTimeout(()=>{dot.style.background='#3AAA7A';},800);
+}
+
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
-/* Close sidebar on outside click for desktop resize */
+/* Close sidebar on desktop resize */
 window.addEventListener('resize',()=>{if(window.innerWidth>767)closeSidebar();});
 
 /* Init */
