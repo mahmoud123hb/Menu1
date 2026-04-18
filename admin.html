@@ -184,6 +184,8 @@
   /* ── CATEGORIES ── */
   .btn-danger-sm { width: 36px; height: 36px; border-radius: 8px; border: 1px solid rgba(220,50,50,0.25); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #C04040; transition: background .2s; flex-shrink: 0; }
   .btn-danger-sm:hover { background: #FFF0F0; }
+  .social-links-list { display: flex; flex-direction: column; gap: 12px; }
+  .social-link-row { display: grid; grid-template-columns: 180px 1fr auto; gap: 10px; align-items: end; }
 
   /* ── CREDENTIALS ── */
   .credentials-info { display: flex; align-items: flex-start; gap: 10px; background: rgba(201,146,42,0.07); border: 1px solid rgba(201,146,42,0.2); border-radius: 12px; padding: 14px 18px; font-size: .85rem; color: var(--text-muted); margin-bottom: 22px; }
@@ -241,6 +243,7 @@
     .modal-actions { flex-direction: column-reverse; }
     .modal-actions .btn-preview, .modal-actions .btn-save { width: 100%; justify-content: center; }
     #toast { bottom: 16px; right: 16px; left: 16px; max-width: unset; }
+    .social-link-row { grid-template-columns: 1fr; }
   }
   @media (max-width: 380px) {
     .stats-grid { grid-template-columns: 1fr; }
@@ -576,6 +579,17 @@
         <input class="form-input" id="footer-copyright" value="© 2026 Gourmet. All rights reserved." oninput="markDirty()">
       </div>
     </div>
+    <div class="card">
+      <div class="card-title">Social Media Links</div>
+      <div class="section-sub" style="margin-bottom:18px;">Choose platform icon and add the link. You can add unlimited links.</div>
+      <div class="social-links-list" id="socialLinksEditor"></div>
+      <div style="margin-top:14px;">
+        <button class="btn-add-item" type="button" onclick="addSocialLinkRow()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Social Link
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- BRANDING -->
@@ -881,7 +895,7 @@ const siteData={
       {id:20,name:'NY Cheesecake',desc:'New York style, berry compote, graham cracker crust',price:9.49,img:'https://images.unsplash.com/photo-1567327613485-fbc7bf196198?w=400&q=80',active:true},
     ],
   },
-  footer:{address:'12 Culinary Ave, NY 10001',phone:'+1 (555) 234-5678',email:'hello@gourmet.com',hours:'Mon–Sun: 10 AM – 11 PM',newsletterTitle:'Stay in the know',newsletterSub:"Get exclusive offers, seasonal menus & chef's specials straight to your inbox.",copyright:'© 2026 Gourmet. All rights reserved.'},
+  footer:{address:'12 Culinary Ave, NY 10001',phone:'+1 (555) 234-5678',email:'hello@gourmet.com',hours:'Mon–Sun: 10 AM – 11 PM',newsletterTitle:'Stay in the know',newsletterSub:"Get exclusive offers, seasonal menus & chef's specials straight to your inbox.",copyright:'© 2026 Gourmet. All rights reserved.',socialLinks:[{platform:'facebook',url:'#'},{platform:'linkedin',url:'#'},{platform:'instagram',url:'#'},{platform:'x',url:'#'}]},
   branding:{name:'Gourmet',color:'#C9922A',tagline:'Premium Dining Experience'},
 };
 
@@ -898,6 +912,7 @@ const siteData={
     setField('hero-badge',siteData.hero.badge);setField('hero-h1a',siteData.hero.h1a);setField('hero-h1b',siteData.hero.h1b);setField('hero-tagline',siteData.hero.tagline);
     setField('footer-address',siteData.footer.address);setField('footer-phone',siteData.footer.phone);setField('footer-email',siteData.footer.email);setField('footer-hours',siteData.footer.hours);
     setField('newsletter-title',siteData.footer.newsletterTitle);setField('newsletter-sub',siteData.footer.newsletterSub);setField('footer-copyright',siteData.footer.copyright);
+    applyFooterSocialFields();
     setField('brand-name',siteData.branding.name);setField('brand-tagline',siteData.branding.tagline);setField('custom-color',siteData.branding.color);
     if(siteData.branding.color)document.documentElement.style.setProperty('--gold',siteData.branding.color);
     // Apply saved brand name to admin UI
@@ -916,6 +931,90 @@ function applyBrandNameToAdminUI(name){
 }
 
 function setField(id,val){const el=document.getElementById(id);if(el&&val!==undefined)el.value=val;}
+const SOCIAL_PLATFORM_OPTIONS=[
+  {value:'facebook',label:'Facebook'},
+  {value:'linkedin',label:'LinkedIn'},
+  {value:'instagram',label:'Instagram'},
+  {value:'x',label:'X'},
+  {value:'youtube',label:'YouTube'},
+  {value:'tiktok',label:'TikTok'},
+  {value:'whatsapp',label:'WhatsApp'},
+  {value:'telegram',label:'Telegram'},
+  {value:'pinterest',label:'Pinterest'},
+  {value:'website',label:'Website'},
+];
+function normalizeSocialPlatform(item){
+  const raw=(item&&item.platform?item.platform:(item&&item.icon?item.icon:'')).toString().trim().toLowerCase();
+  if(raw==='f'||raw==='facebook')return 'facebook';
+  if(raw==='in'||raw==='linkedin')return 'linkedin';
+  if(raw==='ig'||raw==='instagram')return 'instagram';
+  if(raw==='x'||raw==='twitter')return 'x';
+  if(SOCIAL_PLATFORM_OPTIONS.some(opt=>opt.value===raw))return raw;
+  return 'website';
+}
+function defaultSocialLinks(){
+  return [
+    {platform:'facebook',url:'#'},
+    {platform:'linkedin',url:'#'},
+    {platform:'instagram',url:'#'},
+    {platform:'x',url:'#'},
+  ];
+}
+function applyFooterSocialFields(){
+  const fallback=defaultSocialLinks();
+  const links=(siteData.footer.socialLinks&&siteData.footer.socialLinks.length?siteData.footer.socialLinks:fallback)
+    .map(item=>({platform:normalizeSocialPlatform(item),url:(item&&item.url?item.url:'#')}))
+    .filter(item=>item.url||item.platform);
+  siteData.footer.socialLinks=links.length?links:fallback;
+  renderSocialLinksEditor();
+}
+function renderSocialLinksEditor(){
+  const wrap=document.getElementById('socialLinksEditor');if(!wrap)return;
+  const links=siteData.footer.socialLinks||[];
+  wrap.innerHTML=links.map((item,idx)=>{
+    const options=SOCIAL_PLATFORM_OPTIONS.map(opt=>`<option value="${opt.value}" ${opt.value===item.platform?'selected':''}>${opt.label}</option>`).join('');
+    return `
+      <div class="social-link-row">
+        <div class="form-group">
+          <label class="form-label">Platform</label>
+          <select class="form-select" onchange="updateSocialPlatform(${idx},this.value)">
+            ${options}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Link</label>
+          <input class="form-input" value="${item.url||'#'}" placeholder="https://..." oninput="updateSocialUrl(${idx},this.value)">
+        </div>
+        <button class="btn-danger-sm" type="button" onclick="removeSocialLinkRow(${idx})" title="Delete">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+function addSocialLinkRow(){
+  if(!Array.isArray(siteData.footer.socialLinks))siteData.footer.socialLinks=defaultSocialLinks();
+  siteData.footer.socialLinks.push({platform:'website',url:'#'});
+  markDirty();
+  renderSocialLinksEditor();
+}
+function removeSocialLinkRow(idx){
+  if(!Array.isArray(siteData.footer.socialLinks))return;
+  siteData.footer.socialLinks.splice(idx,1);
+  if(!siteData.footer.socialLinks.length)siteData.footer.socialLinks=[{platform:'website',url:'#'}];
+  markDirty();
+  renderSocialLinksEditor();
+}
+function updateSocialPlatform(idx,val){
+  if(!siteData.footer.socialLinks[idx])return;
+  siteData.footer.socialLinks[idx].platform=normalizeSocialPlatform({platform:val});
+  markDirty();
+}
+function updateSocialUrl(idx,val){
+  if(!siteData.footer.socialLinks[idx])return;
+  siteData.footer.socialLinks[idx].url=val;
+  markDirty();
+}
 let currentMenuCat='',nextId=200,isDirty=false;
 function markDirty(){isDirty=true;}
 function getCats(){return siteData.categories.map(c=>c.id||c.title);}
@@ -1100,6 +1199,11 @@ function collectFormValues(){
   siteData.hero.badge=val('hero-badge');siteData.hero.h1a=val('hero-h1a');siteData.hero.h1b=val('hero-h1b');siteData.hero.tagline=val('hero-tagline');
   siteData.footer.address=val('footer-address');siteData.footer.phone=val('footer-phone');siteData.footer.email=val('footer-email');siteData.footer.hours=val('footer-hours');
   siteData.footer.newsletterTitle=val('newsletter-title');siteData.footer.newsletterSub=val('newsletter-sub');siteData.footer.copyright=val('footer-copyright');
+  const socialLinks=(siteData.footer.socialLinks||[]).map(item=>({
+    platform:normalizeSocialPlatform(item),
+    url:((item&&item.url)||'').trim()||'#',
+  })).filter(item=>item.platform&&item.url);
+  siteData.footer.socialLinks=socialLinks.length?socialLinks:defaultSocialLinks();
   // ★ Brand name — read from input and apply everywhere ★
   const newName = val('brand-name').trim() || 'Gourmet';
   siteData.branding.name = newName;

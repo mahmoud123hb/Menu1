@@ -1005,7 +1005,6 @@
 
   <section class="categories" id="categoriesSection"></section>
   <section class="features" id="featuresSection"></section>
-
   <div class="newsletter">
     <div class="newsletter-text">
       <h3 id="newsletterTitle">Stay in the know</h3>
@@ -1028,7 +1027,7 @@
           <span class="footer-brand-name">Gourmet</span>
         </button>
         <p>We bring the finest culinary experiences to your table. From farm to fork, every dish tells a story of passion and craftsmanship.</p>
-        <div class="socials">
+        <div class="socials" id="footerSocials1">
           <a class="social-btn" href="#">f</a>
           <a class="social-btn" href="#">in</a>
           <a class="social-btn" href="#">ig</a>
@@ -1127,7 +1126,7 @@
           <span class="footer-brand-name">Gourmet</span>
         </button>
         <p>We bring the finest culinary experiences to your table. From farm to fork, every dish tells a story of passion and craftsmanship.</p>
-        <div class="socials">
+        <div class="socials" id="footerSocials2">
           <a class="social-btn" href="#">f</a>
           <a class="social-btn" href="#">in</a>
           <a class="social-btn" href="#">ig</a>
@@ -1161,8 +1160,7 @@
     <div class="footer-bottom">
       <span id="footerCopyright2">© 2026 Gourmet. All rights reserved.</span>
       <div class="footer-links">
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Service</a>
+        
         <a href="#">Cookie Policy</a>
       </div>
     </div>
@@ -1220,7 +1218,7 @@ const defaultData = {
       { id:20, name:'NY Cheesecake', desc:'New York style, berry compote, graham cracker crust',          price:9.49,  img:'https://images.unsplash.com/photo-1567327613485-fbc7bf196198?w=400&q=80', active:true },
     ],
   },
-  footer: { address:'12 Culinary Ave, NY 10001', phone:'+1 (555) 234-5678', email:'hello@gourmet.com', hours:'Mon–Sun: 10 AM – 11 PM' },
+  footer: { address:'12 Culinary Ave, NY 10001', phone:'+1 (555) 234-5678', email:'hello@gourmet.com', hours:'Mon–Sun: 10 AM – 11 PM', socialLinks:[{icon:'f',url:'#'},{icon:'in',url:'#'},{icon:'ig',url:'#'},{icon:'X',url:'#'}] },
   branding: { name:'Gourmet', color:'#C9922A' },
 };
 
@@ -1248,6 +1246,7 @@ function applyData(d) {
   renderCategories(d.categories);
   renderFeatures(d.features);
   renderFooterMenuLinks(d.categories);
+  renderFooterSocialLinks(d.footer.socialLinks);
 
   setText('footerAddress', d.footer.address);
   setText('footerPhone', d.footer.phone);
@@ -1269,7 +1268,6 @@ function setText(id, val) {
   const el = document.getElementById(id);
   if (el && val !== undefined) el.textContent = val;
 }
-
 /* ══ RENDER ══ */
 function renderCategories(cats) {
   const sec = document.getElementById('categoriesSection');
@@ -1306,6 +1304,36 @@ function renderFooterMenuLinks(cats) {
   const el2 = document.getElementById('footerMenuLinks2');
   if (el1) el1.innerHTML = links;
   if (el2) el2.innerHTML = links;
+}
+
+function renderFooterSocialLinks(links){
+  const defaults=[{platform:'facebook',url:'#'},{platform:'linkedin',url:'#'},{platform:'instagram',url:'#'},{platform:'x',url:'#'}];
+  const safeLinks=(Array.isArray(links)&&links.length?links:defaults);
+  const html=safeLinks.map(item=>{
+    const platform=(item&&item.platform?item.platform:(item&&item.icon?item.icon:'website'));
+    const iconSvg=socialIconSvg(platform);
+    const url=(item&&item.url?item.url:'#');
+    const label=String(platform||'social');
+    const target=url==='#'?'':' target="_blank" rel="noopener noreferrer"';
+    return `<a class="social-btn" href="${url}"${target} aria-label="${label}">${iconSvg}</a>`;
+  }).join('');
+  const s1=document.getElementById('footerSocials1');
+  const s2=document.getElementById('footerSocials2');
+  if(s1)s1.innerHTML=html;
+  if(s2)s2.innerHTML=html;
+}
+function socialIconSvg(platform){
+  const p=String(platform||'').toLowerCase();
+  if(p==='facebook'||p==='f')return '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M13.5 22v-8h2.7l.5-3h-3.2V9.2c0-.9.3-1.5 1.6-1.5H17V5a20 20 0 0 0-2.4-.1c-2.4 0-4 1.4-4 4.1V11H8v3h2.6v8z"/></svg>';
+  if(p==='linkedin'||p==='in')return '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M6.94 8.5a1.72 1.72 0 1 1 0-3.44 1.72 1.72 0 0 1 0 3.44zM5.4 9.84h3.08V19H5.4zM10.3 9.84h2.95v1.25h.04c.41-.78 1.42-1.6 2.93-1.6 3.13 0 3.7 2.06 3.7 4.74V19h-3.07v-4.24c0-1.01-.02-2.31-1.41-2.31-1.41 0-1.63 1.1-1.63 2.24V19H10.3z"/></svg>';
+  if(p==='instagram'||p==='ig')return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.4" cy="6.6" r="1"/></svg>';
+  if(p==='x'||p==='twitter')return '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M18.24 3h2.98l-6.5 7.43L22.4 21h-6.02l-4.72-6.17L6.26 21H3.28l6.95-7.95L2 3h6.17l4.27 5.64zm-1.06 16.2h1.65L7.28 4.72H5.5z"/></svg>';
+  if(p==='youtube')return '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M23 12s0-3.2-.4-4.7a2.95 2.95 0 0 0-2.1-2.1C19 4.8 12 4.8 12 4.8s-7 0-8.5.4a2.95 2.95 0 0 0-2.1 2.1C1 8.8 1 12 1 12s0 3.2.4 4.7a2.95 2.95 0 0 0 2.1 2.1c1.5.4 8.5.4 8.5.4s7 0 8.5-.4a2.95 2.95 0 0 0 2.1-2.1c.4-1.5.4-4.7.4-4.7zM10 15.5v-7l6 3.5z"/></svg>';
+  if(p==='tiktok')return '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M14.5 3c.4 2 1.6 3.4 3.5 4V9a7 7 0 0 1-3.5-1v5.3a5.3 5.3 0 1 1-4.2-5.2v2.2a3.1 3.1 0 1 0 2.1 3V3z"/></svg>';
+  if(p==='whatsapp')return '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M20.5 3.5A11 11 0 0 0 3.8 17.6L2 22l4.6-1.7A11 11 0 1 0 20.5 3.5zM12 20a8 8 0 0 1-4-1.1l-.3-.2-2.7 1 .9-2.6-.2-.3A8 8 0 1 1 12 20zm4.4-6.1c-.2-.1-1.3-.6-1.5-.7s-.3-.1-.5.1-.6.7-.7.8-.3.2-.5.1a6.6 6.6 0 0 1-2-1.2 7.2 7.2 0 0 1-1.4-1.8c-.1-.2 0-.4.1-.5l.3-.4.2-.3.1-.4c0-.1-.5-1.3-.7-1.7-.2-.5-.4-.4-.5-.4h-.5c-.2 0-.4.1-.6.3-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7a9.4 9.4 0 0 0 3.6 3.1c1.9.8 1.9.5 2.3.5.3 0 1.3-.5 1.5-1 .2-.5.2-.9.2-1 0-.1-.2-.1-.4-.2z"/></svg>';
+  if(p==='telegram')return '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M21.4 4.6 3.8 11.4c-1.2.5-1.2 1.2-.2 1.5l4.5 1.4 1.8 5.6c.2.6.1.9.8.9.5 0 .7-.2.9-.4l2.2-2.2 4.6 3.4c.8.5 1.4.2 1.6-.8L23 5.9c.3-1.3-.5-1.9-1.6-1.3zM9 14l9.3-5.9c.4-.2.7-.1.4.2l-7.9 7.2-.3 3.3z"/></svg>';
+  if(p==='pinterest')return '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.6 19.3c0-.8 0-2 .3-2.9l1.5-6.2s-.4-.8-.4-2c0-1.8 1-3.2 2.4-3.2 1.1 0 1.6.8 1.6 1.8 0 1.1-.7 2.7-1 4.2-.3 1.2.6 2.2 1.8 2.2 2.2 0 3.9-2.3 3.9-5.6 0-2.9-2.1-5-5.1-5-3.5 0-5.5 2.6-5.5 5.3 0 1.1.4 2.2.9 2.8.1.1.1.2.1.4l-.3 1.3c0 .2-.2.3-.4.2-1.5-.6-2.4-2.4-2.4-4 0-3.3 2.4-6.4 6.9-6.4 3.6 0 6.4 2.6 6.4 6 0 3.6-2.3 6.6-5.4 6.6-1.1 0-2.1-.6-2.4-1.3l-.7 2.7a11.6 11.6 0 0 1-1.5 3A10 10 0 1 0 12 2z"/></svg>';
+  return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>';
 }
 
 /* ══ REAL-TIME SYNC ══ */
